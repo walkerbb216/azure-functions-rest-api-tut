@@ -4,8 +4,13 @@ const { insertEntity } = require("../services/table-services");
 app.http('CreatePost', {
     methods: ['POST'],
     authLevel: 'anonymous',
-    handler: async function (context, req) {
+    type: 'httpTrigger',
+    direction: 'in',
+    name: 'req',
+    handler: async function (req, context) {
         try {
+          const reqData = await req.json();
+
           if (!req.body) {
             context.res = {
               status: 400,
@@ -14,7 +19,9 @@ app.http('CreatePost', {
             return;
           }
       
-          const { blog, title, content } = req.body;
+          const blog = reqData.blog;
+          const title = reqData.title;
+          const content = reqData.content;
       
           if (!blog || !title || !content) {
             context.res = {
@@ -30,13 +37,16 @@ app.http('CreatePost', {
             title: { _: title },
             content: { _: content },
           };
+
+          console.log(entity);
       
-          const result = await insertEntity("posts", entity);
+          const result = await insertEntity("Posts", entity);
       
           context.res = {
             status: 200,
             body: result,
           };
+
         } catch (error) {
           context.res = {
             status: 500,
